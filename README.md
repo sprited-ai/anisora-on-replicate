@@ -31,8 +31,13 @@ An API `Cancel-After` header is still required to bound platform cold start.
 
 ## Status
 
-Packaging in development. Pure graph tests pass; container and hosted GPU
-validation are pending. Do not infer hosted availability from these files.
+Public model: https://replicate.com/sprited/anisora (first upload in progress).
+
+Eight tests pass. An offline container HTTP test on gin's RTX PRO 6000 Blackwell
+generated 81 PNG frames at 192x256, seed 42, in 18.01 seconds after 6.76 seconds
+of setup. No model mounts or network were available. The extracted frames were
+visually checked for a full character rotation. This is one local validation,
+not a hosted speed estimate. Hosted verification is pending.
 
 ## Provenance
 
@@ -41,3 +46,30 @@ their upstream projects. Shared Wan components come from Comfy-Org's Wan 2.1
 repack. ComfyUI is GPL-3.0 and runs as a separate subprocess. Packaging utilities
 are adapted from [Sprited's SCAIL-2 packaging](https://github.com/sprited-ai/scail-2)
 under its MIT license. See `weights.json` for pinned download sources.
+
+## Calling from Sprute
+
+Pin a tested Replicate version when integrating. Send `image`, `seed`,
+`return_frames: true` and any sampling overrides. Use `prepared_input: true`
+only for an opaque image already at the requested width and height.
+
+The result contains `video`, `frames`, `metadata` and `seed`. Download `frames`
+for lossless processing; do not extract sprites from the lossy MP4 preview.
+Frame ZIP order is zero-based and follows `reverse_frames`. Inspect metadata
+for the effective dimensions, frame count, seed and sampler settings.
+
+For a bounded smoke test, `tools/test_endpoint.py` sends `Cancel-After: 10m`,
+polls a single prediction, and cancels it if its local watchdog expires. It
+does not automatically retry prediction creation. For example:
+
+```sh
+python tools/test_endpoint.py \
+  --model sprited/anisora \
+  --version TESTED_VERSION_ID \
+  --inputs input.json \
+  --out output/hosted-test \
+  --token-file /path/to/private-token-file
+```
+
+`input.json` may use `{"image":{"file":"/absolute/path/reference.png"},"seed":42}`;
+the harness uploads that file before submitting the prediction.
