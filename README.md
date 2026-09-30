@@ -31,7 +31,12 @@ An API `Cancel-After` header is still required to bound platform cold start.
 
 ## Status
 
-Public model: https://replicate.com/sprited/anisora (first upload in progress).
+Public model: https://replicate.com/sprited/anisora
+
+Deployed version:
+`2326f1728b7ae815cddaa444c45d3557fb3be6362c02c5c30cfa0a1e031bdee8`.
+The published API requires only `image` and returns `video`, `frames`,
+`metadata`, and `seed`. Hosted inference verification is running.
 
 Eight tests pass. An offline container HTTP test on gin's RTX PRO 6000 Blackwell
 generated 81 PNG frames at 192x256, seed 42, in 18.01 seconds after 6.76 seconds
