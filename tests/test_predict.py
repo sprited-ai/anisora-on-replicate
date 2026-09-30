@@ -36,7 +36,7 @@ def test_real_prediction_returns_original_ordered_pngs(tmp_path, reverse):
     ns=dict(deadline=lambda *a:contextlib.nullcontext(),ROOT=tmp_path,Path=Path,Input=lambda default=None,**kw:default,
             Optional=Optional,Output=Output,Params=Params,build_graph=build_graph,Image=Image,ImageOps=ImageOps,
             time=time,secrets=secrets,uuid=uuid,shutil=shutil,json=json,PROMPT=PROMPT,NEGATIVE_PROMPT=NEGATIVE_PROMPT,
-            archive_frames=archive_frames,encode_mp4=lambda pattern,n,fps,path:Path(path).write_bytes(b'preview'))
+            archive_frames=archive_frames,encode_animation=lambda pattern,n,fps,path,*args:Path(path).write_bytes(b'preview'))
     exec(compile(ast.Module(body=[method],type_ignores=[]),'predict.py','exec'),ns)
     result=ns['predict'](SimpleNamespace(comfy=Comfy()),image=source,num_frames=5,seed=42,reverse_frames=reverse,prepared_input=True)
     assert result.video.is_file()

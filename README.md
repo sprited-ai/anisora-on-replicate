@@ -88,3 +88,7 @@ python tools/test_endpoint.py \
 
 `input.json` may use `{"image":{"file":"/absolute/path/reference.png"},"seed":42}`;
 the harness uploads that file before submitting the prediction.
+
+## Output encoding
+
+`output_format` selects `mp4` (H.264, default), `webm` (VP9), or looping animated `webp`. `output_quality` ranges from 1 to 100 (default 80); it controls compression, not inference. Values are codec-relative and 100 does not guarantee lossless RGB. Use `return_frames` for original PNGs. Outputs remain opaque; choosing WebP does not remove the background. Format and quality are recorded in metadata.

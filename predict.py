@@ -12,8 +12,9 @@ from cog import BasePredictor, BaseModel, Input, Path
 from PIL import Image, ImageOps
 from comfy_client import ComfyServer
 from runtime_limits import deadline
+from output_media import encode_animation
 from workflow import Params, build_graph
-from media import encode_mp4, archive_frames
+from media import archive_frames
 
 ROOT = FilePath(os.environ.get('ANISORA_WORK', '/tmp/anisora'))
 COMFY = FilePath(os.environ.get('COMFY_DIR', '/ComfyUI'))
@@ -57,6 +58,8 @@ class Predictor(BasePredictor):
         scheduler: str = Input(default='simple', choices=['simple', 'normal', 'karras', 'exponential', 'sgm_uniform', 'ddim_uniform', 'beta', 'linear_quadratic', 'kl_optimal']),
         prepared_input: bool = Input(default=False, description='Preserve exact opaque RGB pixels. Image must match width/height.'),
         reverse_frames: bool = Input(default=False, description='Reverse output ordering. Sprute currently reverses AniSora output before direction extraction.'),
+        output_format: str = Input(default="mp4", choices=["mp4", "webm", "webp"], description="Output file format: MP4 (H.264), WebM (VP9), or looping animated WebP. Does not change inference."),
+        output_quality: int = Input(default=80, ge=1, le=100, description="Compression quality: higher means better fidelity and usually larger files. Codec-relative, not a model quality score; 100 does not guarantee lossless output. Use PNG frames for lossless originals."),
         return_frames: bool = Input(default=True, description='Return lossless PNG ZIP for local background removal and sprite assembly.'),
         seed: Optional[int] = Input(default=None),
     ) -> Output:
@@ -98,13 +101,14 @@ class Predictor(BasePredictor):
                 ordered = result/'png'; ordered.mkdir()
                 for i, path in enumerate(paths):
                     shutil.copyfile(path, ordered/f'f_{i+1:05d}_.png')
-                video = result/'video.mp4'
-                encode_mp4(str(ordered/'f_%05d_.png'), num_frames, fps, str(video))
+                video = result/f'video.{output_format}'
+                encode_animation(str(ordered/'f_%05d_.png'), num_frames, fps, str(video), output_format, output_quality)
                 archive = result/'frames.zip' if return_frames else None
                 if archive:
                     archive_frames(paths, archive)
                 metadata = result/'metadata.json'
                 metadata.write_text(json.dumps(dict(model='AniSora V3.2 FP8 scaled', **vars(p), fps=fps,
+                                                     output_format=output_format, output_quality=output_quality,
                                                      reverse_frames=reverse_frames, elapsed_seconds=time.monotonic()-started), indent=2))
                 return Output(video=Path(video), frames=Path(archive) if archive else None,
                               metadata=Path(metadata), seed=seed)
