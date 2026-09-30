@@ -22,6 +22,8 @@ def test_real_prediction_returns_original_ordered_pngs(tmp_path, reverse):
     class Output:
         def __init__(self,**values):self.__dict__.update(values)
     class Comfy:
+        def alive(self):
+            return True
         def run(self, graph, timeout):
             assert timeout==720
             assert graph['sample_high']['inputs']['end_at_step']==3

@@ -71,6 +71,9 @@ class Predictor(BasePredictor):
                        low_cfg=low_guidance_scale, shift=shift, low_shift=low_shift,
                        sampler=sampler_name, scheduler=scheduler, output_prefix=f'{job}/f')
             graph = build_graph(p)
+            if not self.comfy.alive():
+                self.comfy.start()
+                self.comfy.wait_ready()
             source = ROOT/'input'/p.image
             output = ROOT/'output'/job
             result = ROOT/'results'/job
