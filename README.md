@@ -59,7 +59,7 @@ and locally under `output/hosted/` (not committed).
 AniSora V3 weights/code and the Kijai repack are identified as Apache-2.0 by
 their upstream projects. Shared Wan components come from Comfy-Org's Wan 2.1
 repack. ComfyUI is GPL-3.0 and runs as a separate subprocess. Packaging utilities
-are adapted from [Sprited's SCAIL-2 packaging](https://github.com/sprited-ai/scail-2)
+are adapted from [Sprited's SCAIL-2 packaging](https://github.com/sprited-ai/scail-2-on-replicate)
 under its MIT license. See `weights.json` for pinned download sources.
 
 ## Calling from Sprute
