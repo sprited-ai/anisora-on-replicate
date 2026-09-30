@@ -4,6 +4,10 @@ Animate an image with a text prompt. Upload a reference image and describe the m
 
 Unofficial community deployment of [Bilibili's Index-AniSora](https://github.com/bilibili/Index-anisora).
 
+## Examples
+
+[View the examples](https://replicate.com/sprited/anisora/examples), including a photoreal fox and an illustrated explorer. Examples use MP4 output without a PNG frame archive.
+
 ## Quantization
 
 This deployment uses **Kijai's FP8-scaled quantized high-noise and low-noise model weights** to reduce GPU memory usage. Outputs may differ from the original full-precision weights. FP8 refers to the model weights; it does not mean every operation or component uses FP8.
