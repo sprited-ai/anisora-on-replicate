@@ -12,7 +12,6 @@ from cog import BasePredictor, BaseModel, Input, Path
 from PIL import Image, ImageOps
 from comfy_client import ComfyServer
 from runtime_limits import deadline
-from defaults import PROMPT, NEGATIVE_PROMPT
 from workflow import Params, build_graph
 from media import encode_mp4, archive_frames
 
@@ -21,9 +20,9 @@ COMFY = FilePath(os.environ.get('COMFY_DIR', '/ComfyUI'))
 
 class Output(BaseModel):
     video: Path
-    frames: Optional[Path] = None
     metadata: Path
     seed: int
+    frames: Optional[Path] = None
 
 class Predictor(BasePredictor):
     def setup(self):
@@ -42,8 +41,8 @@ class Predictor(BasePredictor):
     def predict(
         self,
         image: Path = Input(description='Reference image. Alpha is composited over gray; preprocessed images can be passed unchanged.'),
-        prompt: str = Input(default=PROMPT, description='Describe the video. Default is Sprute character turntable.'),
-        negative_prompt: str = Input(default=NEGATIVE_PROMPT),
+        prompt: str = Input(default="A 360-degree turning and circling video of a 2D RPG game character. Pixel Art. Game Sprite. This is a full-body long shot with a plain gray background. Preserve character's reference proportions, clothes and hairstyle. Clear readable silhouette, clean contours, flat local colors with restrained cel shading. Fixed camera, constant character size, feet on the same spot. aesthetic score: 5.5. motion score: 3.0. There is no text in the video.", description='Describe the video. Default is Sprute character turntable.'),
+        negative_prompt: str = Input(default='3D, maya, render, blender, photorealistic, glossy plastic, sculpted figurine, dramatic lighting, gradients, walking, running, dancing, camera movement, zoom, cropped feet, outfit change, extra limbs, text, scene change, dithering, '),
         width: int = Input(default=192, ge=32, le=1024),
         height: int = Input(default=256, ge=32, le=1024),
         num_frames: int = Input(default=81, ge=5, le=161, description='Must be 4n+1.'),
