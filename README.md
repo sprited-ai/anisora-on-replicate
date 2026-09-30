@@ -36,13 +36,23 @@ Public model: https://replicate.com/sprited/anisora
 Deployed version:
 `2326f1728b7ae815cddaa444c45d3557fb3be6362c02c5c30cfa0a1e031bdee8`.
 The published API requires only `image` and returns `video`, `frames`,
-`metadata`, and `seed`. Hosted inference verification is running.
+`metadata`, and `seed`. Hosted inference verified successfully.
 
 Eight tests pass. An offline container HTTP test on gin's RTX PRO 6000 Blackwell
 generated 81 PNG frames at 192x256, seed 42, in 18.01 seconds after 6.76 seconds
 of setup. No model mounts or network were available. The extracted frames were
 visually checked for a full character rotation. This is one local validation,
-not a hosted speed estimate. Hosted verification is pending.
+not a hosted speed estimate.
+
+Hosted prediction `msxx8yh9fsrne0d0xz7tzhnh54` succeeded on the deployed version
+with a `Cancel-After: 10m` request. Replicate reports 14.10 seconds inference and
+415.00 seconds total including cold start. All 81 returned PNGs decoded at
+192x256, metadata confirmed seed 42 and the default sampling settings, and the
+rotation contact sheet was visually inspected. These timings are one test, not
+a latency guarantee. MP4, PNG ZIP, settings JSON and seed were all returned.
+
+Validation evidence is retained on gin at `/mnt/stash/anisora-replicate/hosted/`
+and locally under `output/hosted/` (not committed).
 
 ## Provenance
 
