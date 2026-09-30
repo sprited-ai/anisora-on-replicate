@@ -1,0 +1,34 @@
+# Independent AniSora V3.2 inference; build with --use-cuda-base-image=false.
+build:
+  gpu: true
+  cuda: "12.8"
+  python_version: "3.12"
+  system_packages:
+    - "ffmpeg"
+    - "git"
+    - "libgl1"
+    - "libglib2.0-0"
+  python_requirements: requirements.txt
+  run:
+    - curl -fsSL https://github.com/replicate/pget/releases/latest/download/pget_linux_x86_64 -o /usr/local/bin/pget && chmod +x /usr/local/bin/pget
+    # ComfyUI v0.33.1 (72865f4f) — the version the WanSCAILToVideo graph was validated on
+    - git clone https://github.com/comfyanonymous/ComfyUI.git /ComfyUI && cd /ComfyUI && git checkout 72865f4f27eaf5396f8f36370e0a2be3a9a090ee && rm -rf .git
+    # cog's template installs `cog` into the Ubuntu python (3.12.3, /usr) but our
+    # requirements into the uv-managed 3.12.12 that /usr/bin/python3 points at, and
+    # its CMD runs bare `python`. Keep everything in the uv interpreter.
+    - uv pip install --python /usr/local/bin/python --break-system-packages -r /ComfyUI/requirements.txt
+    # All weights bundled during build; no runtime downloads.
+    - mkdir -p /ComfyUI/models/diffusion_models /ComfyUI/models/text_encoders /ComfyUI/models/vae /ComfyUI/models/clip_vision
+    - pget -f https://huggingface.co/Kijai/WanVideo_comfy_fp8_scaled/resolve/033a4e487f60220b3d6e469599a6aebc46e13cee/I2V/AniSora/Wan2_2-I2V_AniSoraV3_2_HIGH_14B_fp8_e4m3fn_scaled_KJ.safetensors /ComfyUI/models/diffusion_models/Wan2_2-I2V_AniSoraV3_2_HIGH_14B_fp8_e4m3fn_scaled_KJ.safetensors && test "$(stat -c %s /ComfyUI/models/diffusion_models/Wan2_2-I2V_AniSoraV3_2_HIGH_14B_fp8_e4m3fn_scaled_KJ.safetensors)" = "15002999874"
+    - pget -f https://huggingface.co/Kijai/WanVideo_comfy_fp8_scaled/resolve/033a4e487f60220b3d6e469599a6aebc46e13cee/I2V/AniSora/Wan2_2-I2V_AniSoraV3_2_LOW_14B_fp8_e4m3fn_scaled_KJ.safetensors /ComfyUI/models/diffusion_models/Wan2_2-I2V_AniSoraV3_2_LOW_14B_fp8_e4m3fn_scaled_KJ.safetensors && test "$(stat -c %s /ComfyUI/models/diffusion_models/Wan2_2-I2V_AniSoraV3_2_LOW_14B_fp8_e4m3fn_scaled_KJ.safetensors)" = "15002999866"
+    - pget -f https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/123acf1cc74bccbb9bfff8ac1ee72edc08c2341d/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors /ComfyUI/models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors && test "$(stat -c %s /ComfyUI/models/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors)" = "6735906897"
+    - pget -f https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/123acf1cc74bccbb9bfff8ac1ee72edc08c2341d/split_files/vae/wan_2.1_vae.safetensors /ComfyUI/models/vae/wan_2.1_vae.safetensors && test "$(stat -c %s /ComfyUI/models/vae/wan_2.1_vae.safetensors)" = "253815318"
+    - pget -f https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/123acf1cc74bccbb9bfff8ac1ee72edc08c2341d/split_files/clip_vision/clip_vision_h.safetensors /ComfyUI/models/clip_vision/clip_vision_h.safetensors && test "$(stat -c %s /ComfyUI/models/clip_vision/clip_vision_h.safetensors)" = "1264219396"
+    # cog runtime into the same interpreter, `python` alias for cog's CMD, and a loud check
+    - uv pip install --python /usr/local/bin/python --break-system-packages cog==0.22.0 coglet==0.22.0
+    - python -c "import cog, coglet, torch, av, websocket, transformers, timm, huggingface_hub; print('runtime ok', torch.__version__)"
+    # Replicate installs runtime dependencies before setup(). This interpreter is
+    # owned by this disposable image; uv's PEP 668 marker blocks that bootstrap.
+    - python -c "import pathlib, sysconfig; (pathlib.Path(sysconfig.get_path('stdlib')) / 'EXTERNALLY-MANAGED').unlink(missing_ok=True)"
+    - python -m pip install cog==0.23.0 coglet==0.23.0
+run: "predict.py:Predictor"
